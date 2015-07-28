@@ -88,9 +88,13 @@ function ThirtyMinBasalFromNow(basalprofile, currentpumptime){
     basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.minutes);});
 
     for (var i = 0; i < basalprofile.length - 1; i++) {
-        if ((current_min >= basalprofile[i].minutes) && (current_min < basalprofile[i + 1].minutes)) {
+        
+        var toprange = basalprofile[i + 1].minutes;
+        if (basalprofile.length - 1){toprange = 1440;}
+        
+        if ((current_min >= basalprofile[i].minutes) && (current_min < toprange)) {
 
-            if (i == basalprofile.length-1){
+            if (i = basalprofile.length-1){
                //it's for the last basal of a day
                var basalNowRate = basalprofile[i].rate;
                var basalNowLenght = 1440 - basalprofile[i].minutes;
