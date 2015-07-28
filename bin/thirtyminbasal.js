@@ -30,6 +30,8 @@ function ThirtyMinBasalFromNow(basalprofile, currentpumptime){
 var currentptime = new Date(currentpumptime);
 var current_min = currentptime.getHours() * 60 + currentptime.getMinutes();
 
+basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.minutes);});
+
   for (var i = 0; i < basalprofile.length - 1; i++) {
     if ((current_min >= basalprofile[i].minutes) && (current_min < basalprofile[i + 1].minutes)) {
 
