@@ -10,6 +10,7 @@ var basalprofile_input = 'constant/current_basal_profile.json';
 var basalprofile_data = require(cwd + '/' + basalprofile_input);
 
 // experimental - calculation pump/OS clocks offset - comparision clock.json filestamp and it's contents
+// TODO: need to add communication delay - few seconds
 function calcClocksOffset(cfilename){
 var stats = fs.statSync(cfilename);
 var systemclock = stats.mtime;
