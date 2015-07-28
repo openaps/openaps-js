@@ -9,7 +9,7 @@ function getLastGlucose(data) {
     if (typeof data[3] !== 'undefined' && data[3].glucose > 30) {
         avg = ( now.glucose - data[3].glucose) / 3;
     } else if (typeof data[2] !== 'undefined' && data[2].glucose > 30) {
-        avg = ( now.glucose - data[2].glucose) / 3;
+        avg = ( now.glucose - data[2].glucose) / 2;
     } else if (typeof data[1] !== 'undefined' && data[1].glucose > 30) {
         avg = now.glucose - data[1].glucose;
     } else { avg = 0; }
@@ -31,8 +31,7 @@ function setTempBasal(rate, duration) {
     else if (rate > maxSafeBasal) { rate = maxSafeBasal; }
     
     requestedTemp.duration = duration;
-    requestedTemp.rate = Math.round( rate * 1000 ) / 1000;
-    
+    requestedTemp.rate = Math.round((Math.round(rate / 0.05) * 0.05)*100)/100;
 };
 
 
@@ -167,8 +166,6 @@ if (!module.parent) {
 
                     // rate required to deliver insulinReq more insulin over 30m:
                     var rate = profile_data.current_basal - (2 * insulinReq);
-                    maxSafeBasal = Math.min(profile_data.max_basal, 2 * profile_data.max_daily_basal, 4 * profile_data.current_basal);
-                    if (rate > maxSafeBasal) { rate = maxSafeBasal; }
                     if (typeof temps_data.rate !== 'undefined' && (temps_data.duration > 0 && rate < temps_data.rate + 0.1)) { // if required temp > existing temp basal
                         console.error("No action required (existing basal " + temps_data.rate + " >~ required temp " + rate + " )")
                     } else {
