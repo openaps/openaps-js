@@ -123,7 +123,7 @@ basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.mi
            //debug logs
            //console.log('Current basal rate: ' + basalNowRate + ', duration:' + basalNowLenght + ', minutes left: '+ basalNowMinLeft);
            //console.log('Next basal rate: ' + basalNextRate + ', duration: ' + basalNextLeght + ', minutes in next basal: ' + basalNexMinLeft);
-           var calculatedthirtminbasal = (basalNowRate/basalNowLenght)*basalNowMinLeft + basalNextRate/basalNextLeght * basalNexMinLeft; 
+           var calculatedthirtminbasal = 2 * ((basalNowRate/basalNowLenght)*basalNowMinLeft + basalNextRate/basalNextLeght * basalNexMinLeft); 
            profile.thirtymin_basal=Math.round((Math.round(calculatedthirtminbasal / 0.05) * 0.05)*100)/100; // round up to 0.05
            break;
         }
