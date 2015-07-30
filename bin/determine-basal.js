@@ -165,8 +165,8 @@ if (!module.parent) {
                         var insulinReq = Math.max(0, (target_bg - snoozeBG) / profile_data.sens);
                         // rate required to deliver insulinReq less insulin over 30m:
                         //var rate = profile_data.current_basal - (2 * insulinReq);
-                        var rate = profile_data.thirtymin_basal - insulinReq;
-                        
+                        var rate = profile_data.thirtymin_basal - (2 * insulinReq);
+
                         if (typeof temps_data.rate !== 'undefined' && (temps_data.duration > 0 && rate > temps_data.rate - 0.1)) { // if required temp < existing temp basal
                             reason = temps_data.rate + "<~" + rate.toFixed(3);
                             console.error(reason);
@@ -189,7 +189,7 @@ if (!module.parent) {
 
                     // rate required to deliver insulinReq more insulin over 30m:
                     //var rate = profile_data.current_basal - (2 * insulinReq);
-                    var rate = profile_data.thirtymin_basal + insulinReq;
+                    var rate = profile_data.thirtymin_basal - (2 * insulinReq);
                     
                     maxSafeBasal = Math.min(profile_data.max_basal, 2 * profile_data.max_daily_basal, 4 * profile_data.current_basal);
                     if (rate > maxSafeBasal) { rate = maxSafeBasal; }
