@@ -86,49 +86,54 @@ function maxBasalLookup() {
 function ThirtyMinBasalFromNow(basalprofile, currentpumptime){
 var currentptime = new Date(currentpumptime);
 var current_min = currentptime.getHours() * 60 + currentptime.getMinutes();
-
 basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.minutes);});
 
   for (var i = 0; i < basalprofile.length;i++) {
-     var bolusstart = basalprofile[i].minutes;
-     if (i == (basalprofile.length-1)){ var bolusend = 1440}
-     else {var bolusend = basalprofile[i + 1].minutes;}
+     
+     var cBasalId = i;    // current basal id
+     if (cBasalId == (basalprofile.length)){ cBasalId = 0}
 
-     if ((current_min >= bolusstart) && (current_min < bolusend)) {
-            
-            if (i == (basalprofile.length-1)){
-               //it's for the last basal of a day
-               var basalNowRate = basalprofile[i].rate;
-               var basalNowLenght = 1440 - basalprofile[i].minutes;
-               var basalNextLeght = basalprofile[1].minutes;
-               var basalNextRate = basalprofile[0].rate;
-               var basalNowMinLeft = 1440 - current_min;
-               var basalNexMinLeft = 30 - basalNowMinLeft;
-            }
-            else {
-               var basalNowRate = basalprofile[i].rate;
-               var basalNowLenght = basalprofile[i+1].minutes  - basalprofile[i].minutes;
-               var basalNextLeght = basalprofile[i+2].minutes - basalprofile[i+1].minutes;
-               var basalNextRate = basalprofile[i+1].rate;
-               var basalNowMinLeft = basalprofile[i+1].minutes - current_min;
-               var basalNexMinLeft = 30 - basalNowMinLeft;
-           }
-           
-           
-           if (basalNowMinLeft > 30) {
-                basalNowMinLeft = 30;
-                basalNexMinLeft = 0;
-           }
-           
-           //debug logs
-           //console.log('Current basal rate: ' + basalNowRate + ', duration:' + basalNowLenght + ', minutes left: '+ basalNowMinLeft);
-           //console.log('Next basal rate: ' + basalNextRate + ', duration: ' + basalNextLeght + ', minutes in next basal: ' + basalNexMinLeft);
-           var calculatedthirtminbasal = 2 * ((basalNowRate/basalNowLenght)*basalNowMinLeft + basalNextRate/basalNextLeght * basalNexMinLeft); 
-           profile.thirtymin_basal=Math.round((Math.round(calculatedthirtminbasal / 0.05) * 0.05)*100)/100; // round up to 0.05
-           break;
+     var nBasalId = cBasalId+1;  // nex basal id
+     if (nBasalId == (basalprofile.length)){ nBasalId = 0}
+
+     var nnBasalId = nBasalId+1; // basal id after the nBasalId 
+     if (nnBasalId == (basalprofile.length)){ nnBasalId = 0}
+     
+     var cBasalMinS = basalprofile[cBasalId].minutes;
+     var cBasalMinE = basalprofile[nBasalId].minutes;
+     if (cBasalMinE == 0){ cBasalMinE = 1440}
+
+     var nBasalMinS = basalprofile[nBasalId].minutes;
+     var nBasalMinE = basalprofile[nnBasalId].minutes;
+     if (nBasalMinE == 0){ nBasalMinE = 1440}
+
+     if ((current_min >= cBasalMinS) && (current_min < cBasalMinE)) {
+       
+        var cBasalRate = basalprofile[cBasalId].rate;
+        var cBasalLen = cBasalMinE - cBasalMinS;
+
+        var nBasalRate = basalprofile[nBasalId].rate;
+        var nBasalLen = nBasalMinE - nBasalMinS;
+      
+        var cBasalMinLeft = cBasalMinE - current_min;
+        var nBasalMinLeft = 30 - cBasalMinLeft;
+
+	    //shotren up to 30 min
+        if (cBasalMinLeft > 30) {
+           cBasalMinLeft = 30;
+           nBasalMinLeft = 0;
         }
 
+        //debug logs
+        //console.error('Current basal rate: ' + cBasalRate + '; Duration:' + cBasalLen + '; Minutes left: '+ cBasalMinLeft);
+        //console.error('Next basal rate: ' + nBasalRate + '; Duration: ' + nBasalLen + '; Minutes in next basal: ' + nBasalMinLeft);
+        var avgBasal = 2 * ((cBasalRate/cBasalLen)*cBasalMinLeft + nBasalRate/nBasalLen * nBasalMinLeft); 
+        profile.thirtymin_basal=Math.round((Math.round(avgBasal / 0.05) * 0.05)*100)/100; // round up to 0.05
+        break;
+
+     }
   }
+
 }
 
 
