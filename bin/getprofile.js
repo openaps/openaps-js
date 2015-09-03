@@ -70,8 +70,8 @@ function isfLookup() {
 }
 
 function maxDailyBasal(){
-    basalprofile_data.sort(function (a, b) { return a.rate < b.rate });
-    profile.max_daily_basal = basalprofile_data[0].rate;
+    basalprofile_data.sort(function (a, b) { if (a.rate < b.rate) { return 1 } if (a.rate > b.rate) { return -1; } return 0; });
+    profile.max_daily_basal = Math.round( basalprofile_data[0].rate *1000)/1000;
 }
 
 /*Return maximum daily basal rate(U / hr) from profile.basals */
@@ -103,7 +103,7 @@ if (!module.parent) {
 
     var profile = {        
           carbs_hr: 28 // TODO: verify this is completely unused and consider removing it if so
-        , max_iob: 1 // maximum amount of non-bolus IOB OpenAPS will ever deliver
+        , max_iob: 1.5 // maximum amount of non-bolus IOB OpenAPS will ever deliver
         , dia: pumpsettings_data.insulin_action_curve        
         , type: "current"
     };
