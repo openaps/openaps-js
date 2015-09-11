@@ -30,7 +30,7 @@ function iobCalc(treatment, time, dia) {
         var bolusTime=new Date(treatment.date);
         var minAgo=(time-bolusTime)/1000/60;
 
-        if (minAgo < 0) { 
+        if (minAgo < 0) {
             var iobContrib=0;
             var activityContrib=0;
         }
@@ -170,32 +170,31 @@ if (!module.parent) {
     var iob_input = process.argv.slice(2, 3).pop()
     var profile_input = process.argv.slice(3, 4).pop()
     var clock_input = process.argv.slice(4, 5).pop()
-  if (!iob_input || !profile_input) {
-    console.log('usage: ', process.argv.slice(0, 2), '<pumphistory> <profile.json> <clock.json>');
-    process.exit(1);
-  }
+    if (!iob_input || !profile_input) {
+      console.log('usage: ', process.argv.slice(0, 2), '<pumphistory> <profile.json> <clock.json>');
+      process.exit(1);
+    }
     var cwd = process.cwd()
     var all_data = require(cwd + '/' + iob_input);
     var profile_data = require(cwd + '/' + profile_input);
     var clock_data = require(cwd + '/' + clock_input);
     var pumpHistory = all_data;
-  pumpHistory.reverse( );
- 
+    pumpHistory.reverse( );
 
-  var all_treatments =  calcTempTreatments( );
-  //console.log(all_treatments);
-  var treatments = all_treatments; // .tempBoluses.concat(all_treatments.tempHistory);
-  treatments.sort(function (a, b) { return a.date > b.date });
-  //var lastTimestamp = new Date(treatments[treatments.length -1].date + 1000 * 60);
-  //console.log(clock_data);
-  var now = new Date();
-  var timeZone = now.toString().match(/([-\+][0-9]+)\s/)[1]
-  var clock_iso = clock_data + timeZone;
-  var clock = new Date(clock_iso);
-  //console.log(clock);
-  var iob = iobTotal(treatments, clock);
-  //var iobs = iobTotal(treatments, lastTimestamp);
-  // console.log(iobs);
-  console.log(JSON.stringify(iob));
+
+    var all_treatments =  calcTempTreatments( );
+    //console.log(all_treatments);
+    var treatments = all_treatments; // .tempBoluses.concat(all_treatments.tempHistory);
+    treatments.sort(function (a, b) { return a.date > b.date });
+    //var lastTimestamp = new Date(treatments[treatments.length -1].date + 1000 * 60);
+    //console.log(clock_data);
+    var now = new Date();
+    var timeZone = now.toString().match(/([-\+][0-9]+)\s/)[1]
+    var clock_iso = clock_data + timeZone;
+    var clock = new Date(clock_iso);
+    //console.log(clock);
+    var iob = iobTotal(treatments, clock);
+    //var iobs = iobTotal(treatments, lastTimestamp);
+    // console.log(iobs);
+    console.log(JSON.stringify(iob));
 }
-
