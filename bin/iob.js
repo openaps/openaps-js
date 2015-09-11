@@ -65,18 +65,17 @@ function iobTotal(treatments, time) {
     var bolusiob = 0;
     var activity = 0;
     if (!treatments) return {};
-    //if (typeof time === 'undefined') {
-        //var time = new Date();
-    //}
 
     treatments.forEach(function(treatment) {
-        if(treatment.date < time.getTime( )) {
+        if (treatment.date < time.getTime( )) {
             var dia = profile_data.dia;
             var tIOB = iobCalc(treatment, time, dia);
+
             if (tIOB && tIOB.iobContrib) iob += tIOB.iobContrib;
             if (tIOB && tIOB.activityContrib) activity += tIOB.activityContrib;
+
             // keep track of bolus IOB separately for snoozes, but decay it twice as fast`
-            if (treatment.insulin >= 0.2 && treatment.started_at) {
+            if (treatment.insulin >= 0.2 && treatment.start_at) {
                 var bIOB = iobCalc(treatment, time, dia/2)
                 //console.log(treatment);
                 //console.log(bIOB);
@@ -95,52 +94,41 @@ function iobTotal(treatments, time) {
 function calcTempTreatments() {
     var tempHistory = [];
     var tempBoluses = [];
-    var now = new Date();
-    var timeZone = now.toString().match(/([-\+][0-9]+)\s/)[1]
+
     for (var i=0; i < pumpHistory.length; i++) {
         var current = pumpHistory[i];
-        //if(pumpHistory[i].date < time) {
-            if (pumpHistory[i]._type == "Bolus") {
-                //console.log(pumpHistory[i]);
-                var temp = {};
-                temp.timestamp = current.timestamp;
-                //temp.started_at = new Date(current.date);
-                temp.started_at = new Date(current.timestamp + timeZone);
-                //temp.date = current.date
-                temp.date = temp.started_at.getTime();
-                temp.insulin = current.amount
-                tempBoluses.push(temp);
-            } else if (pumpHistory[i]._type == "TempBasal") {
-                if (current.temp == 'percent') {
-                    continue;
-                }
-                var rate = pumpHistory[i].rate;
-                var date = pumpHistory[i].date;
-                if (i>0 && pumpHistory[i-1].date == date && pumpHistory[i-1]._type == "TempBasalDuration") {
-                    var duration = pumpHistory[i-1]['duration (min)'];
-                } else if (i+1<pumpHistory.length && pumpHistory[i+1].date == date && pumpHistory[i+1]._type == "TempBasalDuration") {
-                    var duration = pumpHistory[i+1]['duration (min)'];
-                } else { console.log("No duration found for "+rate+" U/hr basal"+date); }
-                var temp = {};
-                temp.rate = rate;
-                //temp.date = date;
-                temp.timestamp = current.timestamp;
-                //temp.started_at = new Date(temp.date);
-                temp.started_at = new Date(temp.timestamp + timeZone);
-                temp.date = temp.started_at.getTime();
-                temp.duration = duration;
-                tempHistory.push(temp);
+
+        if (current.type == "Bolus") {
+            var temp = {};
+
+            temp.start_at = new Date(current.start_at);
+            temp.date = temp.start_at.getTime();
+            temp.insulin = current.amount
+            tempBoluses.push(temp);
+        } else if (current.type == "TempBasal") {
+            if (current.temp == 'percent') {
+                continue;
             }
-        //}
+            var rate = current.rate;
+
+            var temp = {};
+            temp.rate = rate;
+
+            temp.start_at = new Date(temp.start_at);
+            temp.end_at = new Date(temp.end_at);
+            temp.date = temp.start_at.getTime();
+            temp.duration = (temp.end_at - temp.start_at);
+            tempHistory.push(temp);
+        }
     };
+
     for (var i=0; i+1 < tempHistory.length; i++) {
         if (tempHistory[i].date + tempHistory[i].duration*60*1000 > tempHistory[i+1].date) {
             tempHistory[i].duration = (tempHistory[i+1].date - tempHistory[i].date)/60/1000;
         }
     }
     var tempBolusSize;
-    var now = new Date();
-    var timeZone = now.toString().match(/([-\+][0-9]+)\s/)[1]
+
     for (var i=0; i < tempHistory.length; i++) {
         if (tempHistory[i].duration > 0) {
             var netBasalRate = tempHistory[i].rate-profile_data.current_basal;
@@ -159,11 +147,6 @@ function calcTempTreatments() {
         }
     }
     return [ ].concat(tempBoluses).concat(tempHistory);
-    return {
-        tempBoluses: tempBoluses,
-        tempHistory: tempHistory
-    };
-
 }
 
 if (!module.parent) {
@@ -177,24 +160,21 @@ if (!module.parent) {
     var cwd = process.cwd()
     var all_data = require(cwd + '/' + iob_input);
     var profile_data = require(cwd + '/' + profile_input);
+
+
     var clock_data = require(cwd + '/' + clock_input);
     var pumpHistory = all_data;
     pumpHistory.reverse( );
 
 
-    var all_treatments =  calcTempTreatments( );
-    //console.log(all_treatments);
-    var treatments = all_treatments; // .tempBoluses.concat(all_treatments.tempHistory);
+    var treatments = calcTempTreatments( );
     treatments.sort(function (a, b) { return a.date > b.date });
-    //var lastTimestamp = new Date(treatments[treatments.length -1].date + 1000 * 60);
-    //console.log(clock_data);
-    var now = new Date();
-    var timeZone = now.toString().match(/([-\+][0-9]+)\s/)[1]
-    var clock_iso = clock_data + timeZone;
-    var clock = new Date(clock_iso);
-    //console.log(clock);
-    var iob = iobTotal(treatments, clock);
-    //var iobs = iobTotal(treatments, lastTimestamp);
-    // console.log(iobs);
+    // console.log(treatments);
+
+    var time = new Date(clock_data);
+
+    var iob = iobTotal(treatments, time);
+    // console.log(iob);
+
     console.log(JSON.stringify(iob));
 }
