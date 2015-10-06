@@ -32,7 +32,7 @@ touch /tmp/openaps.lock
 
 # make sure decocare can talk to the Carelink USB stick
 ~/decocare/insert.sh 2>/dev/null >/dev/null
-python -m decocare.stick $(python -m decocare.scan) >/dev/null && echo "decocare.scan OK" || sudo ~/openaps-js/bin/fix-dead-carelink.sh | tee -a /var/log/openaps/easy.log
+python -m decocare.stick $(python -m decocare.scan) >/dev/null && echo "decocare.scan OK" || bash ~/openaps-js/bin/status-check.sh | tee -a /var/log/openaps/easy.log
 
 # sometimes git gets stuck
 find ~/openaps-dev/.git/index.lock -mmin +5 -exec rm {} \; 2>/dev/null > /dev/null
@@ -62,7 +62,7 @@ getglucose() {
 # get pump status (suspended, etc.)
 getpumpstatus() {
     echo "Checking pump status"
-    openaps status || echo -n "!" >> /var/log/openaps/easy.log
+    ~/openaps-js/bin/status-check.sh || echo -n "!" >> /var/log/openaps/easy.log
     grep -q status status.json.new && ( rsync -tu status.json.new status.json && echo -n "." >> /var/log/openaps/easy.log ) || echo -n "!" >> /var/log/openaps/easy.log
 }
 # query pump, and update pump data files if successful
@@ -138,7 +138,7 @@ cat requestedtemp.json | json_pp | grep reason >> /var/log/openaps/easy.log
 grep -q rate requestedtemp.json && ( openaps enact || openaps enact ) && tail enactedtemp.json && ( echo && cat enactedtemp.json | egrep -i "bg|rate|dur|re|tic|tim" | sort -r ) >> /var/log/openaps/easy.log && cat iob.json | json_pp | grep '"iob' >> /var/log/openaps/easy.log
 
 echo "Re-querying pump"
-query pump
+querypump
 
 # unlock in case upload is really slow
 rm /tmp/openaps.lock
