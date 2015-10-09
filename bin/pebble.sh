@@ -28,5 +28,5 @@ node ~/openaps-js/bin/oref0-calculate-iob.js pumphistory.json profile.json now.j
 node ~/openaps-js/bin/oref0-determine-basal.js iob.json currenttemp.json glucose.json profile.json > requestedtemp.json.new && grep reason requestedtemp.json.new && rsync -tu requestedtemp.json.new requestedtemp.json
 node ~/openaps-js/bin/oref0-pebble.js glucose.json iob.json current_basal_profile.json currenttemp.json requestedtemp.json enactedtemp.json > /tmp/pebble-openaps.json
 #cat /tmp/pebble-openaps.json
-grep "refresh_frequency" /tmp/pebble-openaps.json && rsync -tu /tmp/pebble-openaps.json /var/www/openaps.json 
+grep "refresh_frequency" /tmp/pebble-openaps.json && rsync -tu /tmp/pebble-openaps.json www/openaps.json 
 #cat www/openaps.json
