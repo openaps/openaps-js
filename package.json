@@ -34,6 +34,6 @@
   },
   "homepage": "https://github.com/openaps/openaps-js",
   "dependencies": {
-    "share2nightscout-bridge": "^0.1.5"
+    "share2nightscout-bridge": "0.1.5"
   }
 }
