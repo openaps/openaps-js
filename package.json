@@ -24,7 +24,7 @@
     "send-device-status":"./bin/send-device-status.js",
     "oref0-get-profile": "./bin/oref0-get-profile.js",
     "oref0-ifttt-notify": "./bin/oref0-ifttt-notify",
-    "reset-usb": "bin/reset-usb.sh",
+    "reset-usb": "./bin/reset-usb.sh",
     "mm-format-ns-glucose": "./bin/mm-format-ns-glucose.sh",
     "mm-format-ns-pump-history": "./bin/mm-format-ns-pump-history.sh",
     "oref0": "./bin/oref0.sh",
