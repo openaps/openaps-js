@@ -26,8 +26,8 @@ if (!module.parent) {
     var requested_temp_input = process.argv.slice(5, 6).pop()
     var battery_input = process.argv.slice(6, 7).pop()
     var webapi = process.argv.slice(7, 8).pop()
-    if (!iob_input || !enacted_temps_input || !glucose_input || !requested_temp_input || !battery_input || !webapi) {
-        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <requestedtemp.json> <[your_webapi].azurewebsites.net>  <battery.json>');
+    if (!iob_input || !enacted_temps_input || !glucose_input || !requested_temp_input || !webapi) {
+        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <requestedtemp.json> <[your_webapi].azurewebsites.net> <battery.json>');
         process.exit(1);
     }
 }
@@ -37,7 +37,7 @@ var glucose_data = require(cwd + '/' + glucose_input);
 var enacted_temps = require(cwd + '/' + enacted_temps_input);
 var iob_data = require(cwd + '/' + iob_input);
 var requested_temp = require(cwd + '/' + requested_temp_input);
-var battery_data = require(cwd +'/' + battery_input);
+
 
 var data = {
     bg: glucose_data[0].glucose,
@@ -45,9 +45,14 @@ var data = {
     tick: requested_temp.tick,
     eventualBG: requested_temp.eventualBG,
     snoozeBG: requested_temp.snoozeBG,
-    reason: requested_temp.reason,
-    battery: battery_data.status+" Voltage:"+battery_data.voltage }
+    reason: requested_temp.reason
+    }
 
+if (battery_input)
+{
+  var battery_data = require(cwd +'/' + battery_input);
+  data.battery = battery_data.status+" Voltage:"+battery_data.voltage;
+}
 
 if (!requested_temp.rate && !requested_temp.duration && enacted_temps.recieved)
 {
