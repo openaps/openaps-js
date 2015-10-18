@@ -27,7 +27,7 @@ if (!module.parent) {
     var battery_input = process.argv.slice(6, 7).pop()
     var webapi = process.argv.slice(7, 8).pop()
     if (!iob_input || !enacted_temps_input || !glucose_input || !requested_temp_input || !battery_input || !webapi) {
-        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <requestedtemp.json> <battery.json> <[your_webapi].azurewebsites.net>');
+        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <requestedtemp.json> <[your_webapi].azurewebsites.net>  <battery.json>');
         process.exit(1);
     }
 }
@@ -55,7 +55,7 @@ data.temp = enacted_temps.temp;
 data.rate = enacted_temps.rate;
 data.duration = enacted_temps.duration;
 data.timestamp = enacted_temps.timestamp;
-data.received": enacted_temps.recieved;
+data.received = enacted_temps.recieved;
 }
 
 var payload=JSON.stringify(data);
