@@ -23,11 +23,12 @@ if (!module.parent) {
     var iob_input = process.argv.slice(2, 3).pop()
     var enacted_temps_input = process.argv.slice(3, 4).pop()
     var glucose_input = process.argv.slice(4, 5).pop()
-    var requested_temp_input = process.argv.slice(5, 6).pop()
-    var battery_input = process.argv.slice(6, 7).pop()
-    var webapi = process.argv.slice(7, 8).pop()
-    if (!iob_input || !enacted_temps_input || !glucose_input || !requested_temp_input || !webapi) {
-        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <requestedtemp.json> <[your_webapi].azurewebsites.net> <battery.json>');
+    var webapi = process.argv.slice(5, 6).pop()
+    var requested_temp_input = process.argv.slice(6, 7).pop()
+    var battery_input = process.argv.slice(7, 8).pop()
+    
+    if (!iob_input || !enacted_temps_input || !glucose_input || !webapi) {
+        console.log('usage: ', process.argv.slice(0, 2), '<iob.json> <enactedBasal.json> <glucose.json> <[your_webapi].azurewebsites.net> optional: <requestedtemp.json> <battery.json>');
         process.exit(1);
     }
 }
@@ -36,31 +37,35 @@ var cwd = process.cwd();
 var glucose_data = require(cwd + '/' + glucose_input);
 var enacted_temps = require(cwd + '/' + enacted_temps_input);
 var iob_data = require(cwd + '/' + iob_input);
-var requested_temp = require(cwd + '/' + requested_temp_input);
+
 
 
 var data = {
     bg: glucose_data[0].glucose,
-    iob: iob_data.iob,    
-    tick: requested_temp.tick,
-    eventualBG: requested_temp.eventualBG,
-    snoozeBG: requested_temp.snoozeBG,
-    reason: requested_temp.reason
-    }
+    iob: iob_data.iob   
+}
+
+if (enacted_temps.rate && enacted_temps.duration && enacted_temps.recieved)
+{
+    data.temp = enacted_temps.temp;
+    data.rate = enacted_temps.rate;
+    data.duration = enacted_temps.duration;
+    data.timestamp = enacted_temps.timestamp;
+    data.received = enacted_temps.recieved;
+}
+
+if (requested_temp_input){
+    var requested_temp = require(cwd + '/' + requested_temp_input);
+    data.tick= requested_temp.tick;
+    data.eventualBG = requested_temp.eventualBG;
+    data.snoozeBG = requested_temp.snoozeBG;
+    data.reason = requested_temp.reason;
+}
 
 if (battery_input)
 {
-  var battery_data = require(cwd +'/' + battery_input);
-  data.battery = battery_data.status+" Voltage:"+battery_data.voltage;
-}
-
-if (!requested_temp.rate && !requested_temp.duration && enacted_temps.recieved)
-{
-data.temp = enacted_temps.temp;
-data.rate = enacted_temps.rate;
-data.duration = enacted_temps.duration;
-data.timestamp = enacted_temps.timestamp;
-data.received = enacted_temps.recieved;
+    var battery_data = require(cwd +'/' + battery_input);
+    data.battery = battery_data.status+" Voltage:"+battery_data.voltage;
 }
 
 var payload=JSON.stringify(data);
@@ -90,4 +95,3 @@ var req = http.request(options, function (res) {
 
 req.write(payload);
 req.end();
-
