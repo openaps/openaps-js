@@ -42,16 +42,12 @@ var iob_data = require(cwd + '/' + iob_input);
 
 var data = {
     bg: glucose_data[0].glucose,
-    iob: iob_data.iob   
-}
-
-if (enacted_temps.rate && enacted_temps.duration && enacted_temps.recieved)
-{
-    data.temp = enacted_temps.temp;
-    data.rate = enacted_temps.rate;
-    data.duration = enacted_temps.duration;
-    data.timestamp = enacted_temps.timestamp;
-    data.received = enacted_temps.recieved;
+    iob: iob_data.iob,
+    temp:enacted_temps.temp,
+    rate: enacted_temps.rate,
+    duration: enacted_temps.duration,
+    timestamp: enacted_temps.timestamp,
+    received: enacted_temps.recieved
 }
 
 if (requested_temp_input){
