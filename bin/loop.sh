@@ -1,4 +1,19 @@
 #!/bin/bash
+
+# Attempt to read from a Carelink reader, upload data, and calculate the new
+# glucose value.
+#
+# Released under MIT license. See the accompanying LICENSE.txt file for
+# full terms and conditions
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 die() {
@@ -36,7 +51,13 @@ trap finish EXIT
 getglucose() {
     echo "Querying CGM"
     ( ( openaps report invoke glucose.json.new || openaps report invoke glucose.json.new ) && grep -v '"glucose": 5' glucose.json.new | grep glucose ) || share2-bridge file glucose.json.new
-    diff -u glucose.json glucose.json.new && echo No new glucose data || ( grep glucose glucose.json.new | head -1 | awk '{print $2}' | while read line; do echo -n " $line "; done >> /var/log/openaps/easy.log && rsync -tu glucose.json.new glucose.json && git commit -m"glucose.json has glucose data: committing" glucose.json )
+    if diff -u glucose.json glucose.json.new; then
+        echo No new glucose data
+    else
+        grep glucose glucose.json.new | head -1 | awk '{print $2}' | while read line; do echo -n " $line "; done >> /var/log/openaps/easy.log \
+            && rsync -tu glucose.json.new glucose.json \
+            && git commit -m"glucose.json has glucose data: committing" glucose.json 
+    fi
 }
 # get pump status (suspended, etc.)
 getpumpstatus() {
@@ -53,7 +74,10 @@ querypump() {
     upload
 }
 # try to upload pumphistory data
-upload() { findpumphistory && ~/bin/openaps-mongo.sh && touch /tmp/openaps.online; }
+upload() {
+    #findpumphistory && ~/bin/openaps-mongo.sh &
+    ping -c 1 google.com > /dev/null && touch /tmp/openaps.online
+}
 # if we haven't uploaded successfully in 10m, use offline mode (if no temp running, set current basal as temp to show the loop is working)
 suggest() {
     openaps suggest || echo -n "!" >> /var/log/openaps/easy.log
@@ -63,13 +87,11 @@ suggest() {
 getpumpsettings() { ~/openaps-js/bin/pumpsettings.sh; }
 
 # functions for making sure we have up-to-date data before proceeding
-findclock() { find clock.json -mmin -10 | egrep -q '.*'; }
 findclocknew() { find clock.json.new -mmin -10 | egrep -q '.*'; }
 findglucose() { find glucose.json -mmin -10 | egrep -q '.*'; }
 findpumphistory() { find pumphistory.json -mmin -10 | egrep -q '.*'; }
 findrequestedtemp() { find requestedtemp.json -mmin -10 | egrep -q '.*'; }
 # write out current status to pebble.json
-#pebble() { findclock && findglucose && findpumphistory && findrequestedtemp && ~/openaps-js/bin/pebble.sh; }
 pebble() { ~/openaps-js/bin/pebble.sh; }
 
 
@@ -101,7 +123,7 @@ tail clock.json
 tail currenttemp.json
 
 # make sure we're not using an old suggestion
-rm requestedtemp.json*
+rm requestedtemp*
 # if we can't run suggest, it might be because our pumpsettings are missing or screwed up"
 suggest || ( getpumpsettings && suggest ) || die "Can't calculate IOB or basal"
 pebble
@@ -112,7 +134,8 @@ tail requestedtemp.json
 # don't act on stale glucose data
 findglucose && grep -q glucose glucose.json || die "No recent glucose data"
 # execute/enact the requested temp
-grep -q rate requestedtemp.json && ( openaps enact || openaps enact ) && tail enactedtemp.json && ( echo && cat enactedtemp.json | egrep -i "bg|rate|re|tic|tim" | sort -r ) >> /var/log/openaps/easy.log
+cat requestedtemp.json | json_pp | grep reason >> /var/log/openaps/easy.log
+grep -q rate requestedtemp.json && ( openaps enact || openaps enact ) && tail enactedtemp.json && ( echo && cat enactedtemp.json | egrep -i "bg|rate|dur|re|tic|tim" | sort -r ) >> /var/log/openaps/easy.log && cat iob.json | json_pp | grep '"iob' >> /var/log/openaps/easy.log
 
 echo "Re-querying pump"
 query pump

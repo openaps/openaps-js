@@ -1,17 +1,30 @@
 #!/bin/bash
+
+# Run the Pebble watch data generator, and make it available for usage by the
+# Pebble watch
+#
+# Copyright (c) 2015 OpenAPS Contributors
+#
+# Released under MIT license. See the accompanying LICENSE.txt file for
+# full terms and conditions
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 cd ~/openaps-dev
-#git fetch --all && git reset --hard origin/master && git pull
-#git pull
 stat -c %y clock.json | cut -c 1-19
 cat clock.json | sed 's/"//g' | sed 's/T/ /'
 echo
-#calculate-iob pumphistory.json profile.json clock.json > iob.json.new && grep iob iob.json.new && mv iob.json.new iob.json
-node ~/openaps-js/bin/iob.js pumphistory.json profile.json clock.json > iob.json.new && grep iob iob.json.new && cp iob.json.new iob.json #&& git commit -m"iob found: committing" iob.json
-#determine-basal iob.json currenttemp.json glucose.json profile.json > requestedtemp.json.new && grep temp requestedtemp.json.new && mv requestedtemp.json.new requestedtemp.json
-#node ~/openaps-js/bin/determine-basal.js iob.json currenttemp.json glucose.json profile.json > requestedtemp.json.new && grep temp requestedtemp.json.new && cp requestedtemp.json.new requestedtemp.json #&& git commit -m"temp found: committing" requestedtemp.json
-#git fetch origin master && git merge -X theirs origin/master && git push
-#git pull && git push
-node ~/openaps-js/bin/pebble.js  glucose.json clock.json iob.json current_basal_profile.json currenttemp.json isf.json requestedtemp.json > /tmp/pebble-openaps.json
-cat /tmp/pebble-openaps.json
-grep "refresh_frequency" /tmp/pebble-openaps.json && rsync -tuv /tmp/pebble-openaps.json www/openaps.json 
-cat www/openaps.json
+share2-bridge file glucose.json.new | grep glucose
+diff -q glucose.json glucose.json.new && grep -q glucose glucose.json.new && rsync -tu glucose.json.new glucose.json 
+node ~/openaps-js/bin/iob.js pumphistory.json profile.json clock.json > iob.json.new && grep iob iob.json.new && rsync -tu iob.json.new iob.json
+node ~/openaps-js/bin/determine-basal.js iob.json currenttemp.json glucose.json profile.json > requestedtemp.json.new && grep reason requestedtemp.json.new && rsync -tu requestedtemp.json.new requestedtemp.json
+node ~/openaps-js/bin/pebble.js glucose.json iob.json current_basal_profile.json currenttemp.json requestedtemp.json enactedtemp.json > /tmp/pebble-openaps.json
+#cat /tmp/pebble-openaps.json
+grep "refresh_frequency" /tmp/pebble-openaps.json && rsync -tu /tmp/pebble-openaps.json www/openaps.json 
+#cat www/openaps.json

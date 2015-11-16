@@ -1,5 +1,23 @@
 #!/usr/bin/env node
 
+/*
+  Insulin On Board (IOB) calculations.
+
+  IOB is also known as "Bolus on Board", "Active Insulin", or "Insulin Remaining"
+
+  Released under MIT license. See the accompanying LICENSE.txt file for
+  full terms and conditions
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+
+*/
+
 function iobCalc(treatment, time, dia) {
     var diaratio = dia / 3;
     var peak = 75 * diaratio;
@@ -57,9 +75,9 @@ function iobTotal(treatments, time) {
             var tIOB = iobCalc(treatment, time, dia);
             if (tIOB && tIOB.iobContrib) iob += tIOB.iobContrib;
             if (tIOB && tIOB.activityContrib) activity += tIOB.activityContrib;
-            // keep track of bolus IOB separately for snoozes, but decay it twice as fast`
+            // keep track of bolus IOB separately for snoozes, but decay it three times as fast
             if (treatment.insulin >= 0.2 && treatment.started_at) {
-                var bIOB = iobCalc(treatment, time, dia/2)
+                var bIOB = iobCalc(treatment, time, dia/3)
                 //console.log(treatment);
                 //console.log(bIOB);
                 if (bIOB && bIOB.iobContrib) bolusiob += bIOB.iobContrib;
