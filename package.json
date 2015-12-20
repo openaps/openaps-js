@@ -1,6 +1,6 @@
 {
-  "name": "openaps-js",
-  "version": "0.0.6",
+  "name": "oref0",
+  "version": "0.0.8",
   "description": "openaps js plugins",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,11 +17,28 @@
   "bugs": {
     "url": "https://github.com/openaps/openaps-js/issues"
   },
-  "bin" : {
-    "calculate-iob" : "./bin/iob.js",
-    "determine-basal" : "./bin/determine-basal.js",
-    "send-tempbasal-Azure" : "./bin/sendtempbasal-Azure.js",
-    "get-profile" : "./bin/getprofile.js"
+  "bin": {
+    "oref0-calculate-iob": "./bin/oref0-calculate-iob.js",
+    "oref0-determine-basal": "./bin/oref0-determine-basal.js",
+    "send-tempbasal-Azure": "./bin/send-tempbasal-Azure.js",
+    "oref0-get-profile": "./bin/oref0-get-profile.js",
+    "oref0-ifttt-notify": "./bin/oref0-ifttt-notify",
+    "oref0-reset-usb": "bin/reset-usb.sh",
+    "mm-format-ns-glucose": "./bin/mm-format-ns-glucose.sh",
+    "mm-format-ns-pump-history": "./bin/mm-format-ns-pump-history.sh",
+    "oref0": "./bin/oref0.sh",
+    "mm-stick": "./bin/mm-stick.sh",
+    "openaps-js": "./bin/oref0.sh",
+    "ns-upload-entries": "./bin/ns-upload-entries.sh",
+    "oref0-pebble": "./bin/oref0-pebble.js"
   },
-  "homepage": "https://github.com/openaps/openaps-js"
+  "homepage": "https://github.com/openaps/openaps-js",
+  "dependencies": {
+    "share2nightscout-bridge": "^0.1.5",
+    "timezone": "0.0.47"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.3",
+    "should": "^7.1.0"
+  }
 }
